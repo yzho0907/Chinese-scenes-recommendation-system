@@ -1,4 +1,3 @@
-import pandas as pd
 import jieba.analyse
 import nltk
 import gensim
@@ -11,15 +10,16 @@ import bisect
 from random import choice
 from random import randint
 from collections import Counter
+import pandas as pd
 
 class Rec:
-    def __init__(self):
-        jieba.analyse.set_stop_words("data/stopWord.txt")
-        self.word2vec = KeyedVectors.load_word2vec_format('/home/young/AnacondaProjects/keras/embedding/wiki.zh.vec', binary=False)
-        tags_file = open('tags_dict.txt', 'r')
+    def __init__(self, file_path):
+        jieba.analyse.set_stop_words(file_path + "/data/stopWord.txt")
+        self.word2vec = KeyedVectors.load_word2vec_format(file_path + '/data/wiki.zh.vec', binary=False)
+        tags_file = open(file_path + 'data/tags_dict.txt', 'r')
         self.tags_dict = eval(tags_file.read())
         self.scene_dict = {}
-        df = pd.read_csv('tourist_cndbpedia5.csv')
+        df = pd.read_csv(file_path + '/data/tourist_cndbpedia.csv')
         title_list = df['title']
         detail_list = df['detail']
         intro_list = df['intro2']
@@ -104,7 +104,8 @@ class Rec:
             weight_sum.append(sum)
         t = randint(0, sum - 1)
         return bisect.bisect_right(weight_sum, t)
-
+    
+    #core
     def recProcess_keyword_based(self, keywords, keywords_tags):
         if len(keywords) == 1:
             keywords_tags.append('普通')
@@ -124,7 +125,7 @@ class Rec:
             keywords_string += self.old_scene_dict[keyword]
             
         # the number of keywords increasas along with the nunmber of scenes #
-        keywords_list =  self.getkeyword_from_tr(keywords_string, 18+length_keywords)
+        keywords_list = self.getkeyword_from_tr(keywords_string, 18+length_keywords)
         
         for key, value in self.scene_dict.items():
             flag = True
@@ -139,7 +140,7 @@ class Rec:
             # try recomend scences only from the same type #
             intersection_list = list(set(tags).intersection(set(keywords_tags)))
             if len(intersection_list) > 0 and one in tags:
-                # if the number of keywords is less than 10, the performance will be not enough #
+                # if the number of keywords is less than 10, the performance is not enough #
                 if len(other_keywords) > 10:
                     for lk in keywords_list:
                         for ok in other_keywords:
@@ -182,10 +183,12 @@ class Rec:
         start = datetime.datetime.now()
         keywords_tags = self.find_keywords_range(keywords)
         sort_list_inside = self.sort_by_value(self.recProcess_keyword_based(keywords, keywords_tags))
+        #print(sort_list_inside[:10])
         end = datetime.datetime.now()
         print (end-start)
         return sort_list_inside[:50]
 
-keywords = ['故宫','象牙山']
-rec = Rec()
-rec.main(keywords)
+if __name__ == '__main__':
+    keywords = ['故宫', '八达岭长城', '东方明珠']
+    rec = Rec('/home/lihaihua/kg/Coolpad_KnowledgeGraph2/demo')
+    rec.main(keywords)
