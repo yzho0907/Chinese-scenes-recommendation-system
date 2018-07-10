@@ -190,5 +190,5 @@ class Rec:
 
 if __name__ == '__main__':
     keywords = ['故宫', '八达岭长城', '东方明珠']
-    rec = Rec('/home/lihaihua/kg/Coolpad_KnowledgeGraph2/demo')
+    rec = Rec('to/your/path')
     rec.main(keywords)
